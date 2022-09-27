@@ -1,0 +1,446 @@
+---
+title: "Cyclistic Case Study Presentation"
+author: "Rahul Pandey"
+date: "2022-09-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Background
+## Scenario
+
+**I am a junior data analyst working in the marketing analyst team at Cyclistic, a bike-share company in Chicago. The director of marketing believes the company’s future success depends on maximizing the number of annual memberships. Therefore, my team wants to understand how casual riders and annual members use Cyclistic bikes differently. From these insights, my team will design a new marketing strategy to convert casual riders into annual members.**
+
+## About the company
+
+**In 2016, Cyclistic launched a successful bike-share oering. Since then, the program has grown to a fleet of 5,824 bicycles that are geotracked and locked into a network of 692 stations across Chicago. The bikes can be unlocked from one station and returned to any other station in the system anytime. Until now, Cyclistic’s marketing strategy relied on building general awareness and appealing to broad consumer segments. One approach that helped make these things possible was the flexibility of its pricing plans: single-ride passes, full-day passes, and annual memberships. Customers who purchase single-ride or full-day passes are referred to as casual riders. Customers who purchase annual memberships are Cyclistic members. Cyclistic’s finance analysts have concluded that annual members are much more profitable than casual riders. Although the pricing flexibility helps Cyclistic attract more customers, The director of marketing believes that maximizing the number of annual members will be key to future growth. Rather than creating a marketing campaign that targets all-new customers, she believes there is a very good chance to convert casual riders into members. She notes that casual riders are already aware of the Cyclistic program and have chosen Cyclistic for their mobility needs.**
+
+## The goal of this case study:
+
+### Three questions will guide the future marketing program:
+
+* **How do annual members and casual riders use Cyclistic bikes differently?**
+* **8Why would casual riders buy Cyclistic annual memberships?**
+* **How can Cyclistic use digital media to influence casual riders to become members?**
+
+### The director of marketing has assigned me the first question to answer: 
+* **How do annual members and casual riders use Cyclistic bikes differently?**
+
+## Deliverables:
+
+* **A clear statement of the business task**
+* **A description of all data sources used**
+* **Documentation of any cleaning or manipulation of data**
+* **A summary of my analysis**
+* **Supporting visualizations and key findings**
+
+## About the data set:
+
+**Since Cyclistic is a fictional company, I will use Divvy’s, a bike-share program based in Chicago, data from Dec, 2020 – Nov, 2021 to complete this case study. To download the data, please use this link. This data was made public by Motivate International Inc, under this license Due to data privacy issues, personal information has been removed or encrypted.**
+
+**I will use the**  ***Ask*** **>** ***Prepare*** **>** ***Process*** **>** ***Analyse*** **>** ***Share*** **>** **Act** **phases of data analysis during my analysis.**
+
+# **1.Ask Phase**  
+**We need to ask SMART (Specific, Measurable, Achievable, Relevant, Time Bound) questions and identify the stakehlolders for our project.**
+
+## Stakeholders:
+
+* **The director of marketing**
+* **The marketing analysis team**
+* **Cyclistic's Executive team**
+ 
+## Guiding Questions:
+
+### What is the main problem I am trying to solve?
+
+* **I am trying to find how do annual members and casual riders use Cyclistic bikes differently?**
+
+* **Who are my key stakeholders?**
+
+* **The director of marketing**
+* **The marketing analysis team**
+* **Cyclistic's Executive team**
+
+### **What is in and out of scope?**
+
+**I have to find trends and patterns in bike usage from data and develop insights. I do not need to raise awareness of annual membership among casual riders.**
+
+
+# **2.Prepare Phase**
+## lets load the relevent packages
+**install.packages('skimr')**  
+**install.packages('tidyverse')**  
+**install.packages("geosphere")**  
+```{r load library, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(skimr)
+library(geosphere)
+library(lubridate)
+```
+
+## Loading the dataset 
+
+```{r}
+dataset1=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\1\\202208-divvy-tripdata.csv")
+
+
+dataset2=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\2\\202207-divvy-tripdata.csv")
+dataset3=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\3\\202206-divvy-tripdata.csv")
+dataset4=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\4\\202205-divvy-tripdata.csv")
+dataset5=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\5\\202204-divvy-tripdata.csv")
+dataset6=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\6\\202203-divvy-tripdata.csv")
+dataset7=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\7\\202202-divvy-tripdata.csv")
+dataset8=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\8\\202201-divvy-tripdata.csv")
+dataset9=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\9\\202112-divvy-tripdata.csv")
+dataset10=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\10\\202111-divvy-tripdata.csv")
+dataset11=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\11\\202110-divvy-tripdata.csv")
+dataset12=read.csv("C:\\Users\\500053108\\Documents\\Google Data  Analytic Case Study\\Dataset\\12\\202109-divvy-tripdata.csv")
+
+
+# Now we will combine all datasets into one dataset
+
+
+dataset=bind_rows(dataset1,
+                  dataset2,
+                  dataset3,
+                  dataset4,
+                  dataset5,
+                  dataset6,
+                  dataset7,
+                  dataset8,
+                  dataset9,
+                  dataset10,
+                  dataset11,
+                  dataset12)
+
+```
+## Lets Describe our dataset
+
+```{r}
+glimpse(dataset)
+#str(dataset)
+# colnames(dataset1)
+head(dataset)
+
+```
+
+
+## Renaming member_casual to membership
+```{r}
+
+dataset=rename(dataset,membership=member_casual)
+
+```
+
+# **3.Process Phase**
+## Feature ride_id
+###  **Since this is a unique_id for each observation it must have a constant pattern** 
+
+```{r}
+
+num_of_char_in_ride_id=c(str_length(dataset$ride_id))
+skim_without_charts(num_of_char_in_ride_id)
+summary(num_of_char_in_ride_id)
+
+```
+**No missing values and all the observation in ride_id are 16 character lenght**
+
+## Checking dimention of our dataset
+```{r}
+dim(dataset)
+
+```
+## Lets check all values of categorical(nominal) variable rideable_type
+```{r}
+
+table(dataset$rideable_type)
+
+```
+## Let check if membership_status entries have typos
+```{r}
+
+table(dataset$membership)
+
+```
+
+
+## Lets convert date strings to date and making a consistent formating to changes to YYYY-MM-DD HH:MM:SS
+```{r}
+  
+
+dataset$started_at <- ymd_hms(dataset$started_at)                
+dataset$ended_at <- ymd_hms(dataset$ended_at)
+
+```
+
+
+
+## Dropping all rows with null observations
+```{r}
+
+dim(dataset)
+dataset <- drop_na(dataset)
+dim(dataset)
+
+```
+
+
+
+## Creating features that list the date, month, day, and year of each ride
+```{r}
+
+dataset$date <- as.Date(dataset$started_at)                      #The default format is yyyy-mm-dd
+dataset$month <- format(as.Date(dataset$date), "%m")             #stores month
+dataset$day <- format(as.Date(dataset$date), "%d")               #stores the day
+dataset$year <- format(as.Date(dataset$date), "%Y")              #stores the year
+dataset$day_of_week <- format(as.Date(dataset$date), "%A")       #stores the day of the week
+
+```
+
+
+## Finding time length of ride(in seconds) to check if there are any negatives and for future analysis need
+```{r}
+
+dataset$length_of_ride <- difftime(dataset$ended_at,dataset$started_at)
+glimpse(dataset)
+
+##changing to a numeric format for using it in analysis
+dataset$length_of_ride <- as.numeric(as.character(dataset$length_of_ride)) 
+is.numeric(dataset$length_of_ride)
+
+```
+
+
+
+
+## Removing outliers observations where lenth of ride is less than 0 or greater than 1 day
+```{r}
+
+clean_data <- dataset%>% filter(!(length_of_ride<=0 | length_of_ride>86400))
+#rm(dataset)
+## observations left
+dim(clean_data)
+
+```
+
+
+## * Lets check for duplicate observations
+```{r}
+
+sum(duplicated(clean_data$ride_id))
+
+```
+
+
+## Adding column ride_distance for finding dist. between coordinates with column headers start_lng, start_lat, end_lang, end_lat
+```{r}
+
+clean_data$ride_distance <- distGeo(matrix(c(clean_data$start_lng, clean_data$start_lat), ncol = 2), matrix(c(clean_data$end_lng, clean_data$end_lat), ncol = 2))
+summary(clean_data)
+
+```
+
+# **4.Analyze Phase**
+## Univariate analysis
+### length_of_ride
+
+```{r}
+
+clean_data %>% 
+  ggplot(mapping=aes(x=length_of_ride )) +geom_histogram(aes(y=..density..,fill=membership),binwidth = 500,color="black")+
+  geom_density(alpha=.2,fill="#FF6666")+
+  labs(title="Distribution of Casual and Members customers accross Length of ride attribute ",
+       subtitle="This graph explains which group between casual and members have larger length of ride",
+       caption="OCT 2021- SEPT 2022")
+```
+
+### ride_distance
+
+```{r}
+
+clean_data %>% 
+  ggplot(mapping=aes(x=ride_distance))+geom_histogram(aes(y=..density..,fill=membership),binwidth = 500,color="black")+
+  geom_density(alpha=.2,fill="#FF6666")+
+  labs(title="Distribution of Casual and Members customers accross Distance of ride attribute ",
+       subtitle="This graph explains which group between casual and members have traveled larger distance of ride",
+       caption="OCT 2021- SEPT 2022")
+
+```
+
+## Bivariate analysis
+
+
+### For arranging, we need to input the levels for months, days as our analysis results will be arranged by months and days
+
+```{r}
+
+  
+  table(clean_data$day_of_week)
+  
+  
+  clean_data$day_of_week <- 
+    ordered(clean_data$day_of_week, levels = c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))
+  
+```
+
+**Above, arrange function will arrange days by week order**
+
+### For analysing number of rides through each day of week in a summary for both casual riders and members
+
+```{r}
+  
+  clean_data %>%
+    group_by(membership, day_of_week) %>%
+    summarise(number_of_ride = n(), .groups = 'drop') %>%
+    arrange(day_of_week)%>%
+    print(n=30) %>% 
+    ggplot()+geom_col(mapping = aes(x=day_of_week,y=number_of_ride,fill=membership))+
+    labs(title="Distribution of Casual and Members customers accross week days ",
+         subtitle="This graph explains the distribution of casual and members customers over different days of the week",caption="OCT 2021- SEPT 2022")
+  
+```
+
+
+### We again iput levels for months like we did for days, here 12 referes to month of previous year
+```{r}
+  
+  clean_data$month <-
+    ordered(clean_data$month, levels = c('12', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'))
+
+```
+### For analysing number of rides for every month in a summary for both casual riders and members
+
+```{r}
+  clean_data %>%
+    group_by(membership, month) %>%
+    summarise(number_of_ride = n(), .groups = 'drop') %>%
+    arrange(month) %>%
+    print(n=30) %>% 
+    ggplot()+geom_col(mapping = aes(x=month,y=number_of_ride,fill=membership))+
+    labs(title="Distribution of Casual and Members customers accross the whole year ",
+         subtitle="This graph explains the distribution of casual and members customers over different Months of the year",caption="OCT 2021- SEPT 2022")
+  
+  
+```
+
+### Aggregating for length of ride, for each week for both casual riders and members
+```{r}
+
+  aggregate(clean_data$length_of_ride ~ clean_data$membership + clean_data$day_of_week, FUN=mean)
+  
+  
+```
+### For analysing Average Time Length of rides through each day of week in a summary for both casual riders and members
+
+```{r}
+  clean_data %>%
+    group_by(membership, month) %>%
+    summarise(average_ride_length = mean(length_of_ride), .groups = 'drop') %>%
+    arrange(month)%>%
+    print(n=30) %>% 
+    ggplot()+geom_col(mapping = aes(x=month,y=average_ride_length,fill=membership))+
+    labs(title="Distribution of Average Length of Ride between Casual and Members customers accross months ",
+         subtitle="This graph explains the distribution of Average Length of Ride between casual and members customers over different Months",caption="OCT 2021- SEPT 2022")
+  
+
+```
+
+### For analysing Average ride distance through each day of week in a summary for both casual riders and members
+```{r}
+  
+  clean_data %>%
+    group_by(membership, day_of_week) %>%
+    summarise(distance_of_ride = mean(ride_distance), .groups = 'drop') %>%
+    arrange(day_of_week)%>%
+    print(n=30) %>% 
+    ggplot()+geom_col(mapping = aes(x=day_of_week,y=distance_of_ride,fill=membership))+
+  labs(title="Distribution of Average Ride Distance between Casual and Members customers accross week ",
+         subtitle="This graph explains the distribution of Average Ride Distance between casual and members customers over different Week Days",caption="OCT 2021- SEPT 2022")
+
+```
+
+##for analysing Average ride distance for each month in a summary for both casual riders and members
+  
+
+```{r}
+  clean_data %>%
+    group_by(membership, month) %>%
+    summarise(distance_of_ride = mean(ride_distance), .groups = 'drop') %>%
+    arrange(month)%>%
+    print(n=30) %>% 
+    ggplot()+geom_col(mapping = aes(x=month,y=distance_of_ride,fill=membership)) +
+    labs(title="Distribution of Average Distance of Ride between Casual and Members customers accross the whole year. ",
+         subtitle="This graph explains the distribution of Average Distance of Ride between casual and members customers over different Months",caption="OCT 2021- SEPT 2022")
+
+```
+
+
+### For seeing how many rides were taken by which member type 
+```{r}
+  
+  clean_data %>%
+    group_by(membership) %>%
+    summarize(number_of_rides = n() , .groups = 'drop') %>% 
+    ggplot()+geom_col(mapping = aes(x=membership,y=number_of_rides,fill=membership))+
+    labs(title="Distribution of Number of Ride between Casual and Members customers accross the whole year. ",
+         subtitle="This graph explains the distribution of Number of Ride between casual and members customers",caption="OCT 2021- SEPT 2022")
+
+  
+
+```
+
+### For seeing how long each type of bike was used for
+```{r}
+  
+  clean_data %>%
+    group_by(rideable_type,membership) %>%
+    summarise(distance_of_ride = mean(ride_distance), .groups = 'drop') %>%
+    arrange(rideable_type)%>%
+    print(n=30) %>% 
+    ggplot()+geom_col(mapping = aes(x=rideable_type,y=distance_of_ride,fill=membership))+
+  labs(title="Distribution of Type  of Ride between Casual and Members customers accross the whole year",
+         subtitle="This graph explains the distribution of Type of Ride between casual and members customers",caption="OCT 2021- SEPT 2022")
+
+  ##electric_bike was used for longer distances
+  
+```
+
+# **5.Share Phase**
+## Listing all our observations
+
+* **Rides by Casual riders significantly increase on weekend(increases by 76.2%) while membership riders use on weekday more often.**
+
+* **In summers (June-Sept), number of rides by casual riders passes that of members but reduces at faster rate during on either sides to become less than that of members.**
+
+* **casual rider's trip is for longer time (greater by 96 %) than members regardless of the season or day.**
+
+* **All users take trips for longer time over weekends, for casual riders, ride time increases by 22 % and for members it increase by 18%.**
+
+* **Average ride time for casual members stays relatively high during Februrary-August.**
+
+* **All users ride for almost similar times regardless of days or seasons.**
+
+* **Number of rides taken by members overall is 20 % more than casual riders. This is on account of consistency in number of rides taken by members for all weekdays (casual memebrs on other hand took 76% more rides on weekends)**
+
+* **Although classic bike was used for more number of rides, electric_bike was used for longer distances.**
+
+
+
+# **6.Act Phase**
+### This phase of data analysis involves acting upon the story that the data tells us. Using the analysis above, my recommendations to the stakeholders will be as follows:
+
+#### Recommendations:
+
+* **1. Casual riders could be offered discounted weekdays passes to increase their ridership. Members could be offered discounted weekend passes to increase their ridership.This recommendation is subject to the financial constraints.**
+
+* **2. The consistency of members to use the bikes is more, we can offer referral discount to the members when they renew their memberships. This will attract more retention of members along with more conversions from casual riders to members.**
+
+* **3.There is a four fold increase in number of rides during summers. A 4-month membership plan for summers could help convert more casual riders to members. Any P2P campaign for such conversion shall be organised on weekends for reaching casual riders most effectively**
+
+* **4.Although people used classic bikes more often, they used electric bikes for longer distance (average ride distance greater than other two by 20%), electric bikes could potentially be more comfortable and could attract more casual riders to become members. (This has to be further investigated by collected preference data)**
+
+### End of Case Study
+
+# ***Thankyou***
